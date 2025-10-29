@@ -3,6 +3,17 @@
 This repository holds the training and inference code for NA-MPNN. See below for installation and examples.
 
 ## Installation
+Installation of NA-MPNN should take between 10-30 minutes depending on your system and internet connection. The bulk of the time is spent setting up the conda environment. The inference code has been tested on Linux and Windows operating systems.
+
+The inference code has been tested on a CPU with the following python/module versions:
+- Python v3.12.11
+- NumPy v2.3.3
+- pandas v2.3.2
+- ProDy v2.6.1
+- OpenBabel v3.1.0
+- PyTorch v2.5.1
+- CUDA v12.4
+
 ### 1. Clone NA-MPNN
 ```sh
 git clone https://github.com/baker-laboratory/NA-MPNN
@@ -54,6 +65,7 @@ conda deactivate && conda activate NA-MPNN
 ```
 
 ## Examples
+The following demonstrations should run in less than 1 minute on a CPU.
 ### Design
 ```sh
 python ./inference/run.py \
@@ -142,4 +154,4 @@ python ./inference/run.py --help
 
 ## Splits
 The *splits* folder contains information about the structures and PPM IDs used
-for training and evaluation.
+for training and evaluation. This includes information on the train/validation/test splits.
