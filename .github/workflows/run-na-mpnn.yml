@@ -68,6 +68,9 @@ jobs:
       
       - name: Run NA-MPNN Inference - Specificity Mode
         run: |
+          # Run specificity prediction for nucleic acids only
+          # omit_AA contains all 20 standard amino acids (ARNDCQEGHILKMFPSTWYV) plus unknown (X)
+          # This fixes protein residues and only predicts nucleic acid specificity
           python ./inference/run.py \
             --model_type "na_mpnn" \
             --mode "specificity" \
