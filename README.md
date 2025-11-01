@@ -2,6 +2,13 @@
 ## Introduction
 This repository holds the training and inference code for NA-MPNN. See below for installation and examples.
 
+## 🚀 Try it on Hugging Face Space
+You can now use NA-MPNN directly in your browser without any installation! Visit our Hugging Face Space for an interactive interface:
+- **Design Mode**: Generate protein and nucleic acid sequences for backbone structures
+- **Specificity Mode**: Predict DNA binding specificity for protein-DNA complexes
+
+Simply upload a PDB file and get results instantly. Perfect for quick experiments and demonstrations!
+
 ## Installation
 Installation of NA-MPNN should take between 10-30 minutes depending on your system and internet connection. The bulk of the time is spent setting up the conda environment. The inference code has been tested on Linux and Windows operating systems.
 
@@ -173,3 +180,56 @@ See [.github/workflows/README.md](.github/workflows/README.md) for detailed docu
 ## Splits
 The *splits* folder contains information about the structures and PPM IDs used
 for training and evaluation. This includes information on the train/validation/test splits.
+
+## Hugging Face Space Deployment
+This repository is set up to run as a Hugging Face Space, providing an easy-to-use web interface for NA-MPNN.
+
+### Files for Hugging Face Space
+- `app.py` - Gradio web interface for design and specificity prediction
+- `requirements.txt` - Python dependencies for the Space
+- `README_HF.md` - Documentation for the Hugging Face Space (with YAML frontmatter)
+- `.gitignore` - Excludes temporary files and build artifacts
+
+### Deploying to Hugging Face
+To deploy this repository as a Hugging Face Space:
+
+1. **Create a new Space** on Hugging Face:
+   - Go to [huggingface.co/new-space](https://huggingface.co/new-space)
+   - Select "Gradio" as the SDK
+   - Choose your Space name and visibility settings
+
+2. **Connect your repository**:
+   ```sh
+   git remote add hf https://huggingface.co/spaces/<your-username>/<space-name>
+   git push hf main
+   ```
+
+3. **Rename README** (on Hugging Face):
+   - Rename `README_HF.md` to `README.md` in the Space repository
+   - This ensures the YAML frontmatter is recognized
+
+4. **Wait for deployment**:
+   - Hugging Face will automatically build and deploy your Space
+   - The app will be available at `https://huggingface.co/spaces/<your-username>/<space-name>`
+
+### Using the Gradio Interface
+The web interface provides two modes:
+
+**Design Mode:**
+- Upload a PDB file containing a backbone structure
+- Adjust temperature for sampling diversity
+- Set number of sequences to generate
+- Option to design only nucleic acids (keep protein fixed)
+
+**Specificity Mode:**
+- Upload a PDB file with a protein-DNA complex
+- Get Position Probability Matrix (PPM) predictions
+- View binding preferences for each DNA position
+
+### Local Testing
+To test the Gradio interface locally:
+```sh
+pip install -r requirements.txt
+python app.py
+```
+Then open your browser to the URL displayed in the terminal (typically http://localhost:7860).

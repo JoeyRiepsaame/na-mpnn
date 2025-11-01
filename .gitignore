@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
+env/
+venv/
+ENV/
 build/
 develop-eggs/
 dist/
@@ -20,6 +23,21 @@ wheels/
 .installed.cfg
 *.egg
 
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyTorch
+*.pt.bak
+
+# Output directories
+out/
+outputs/
+results/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
 # Virtual environments
 venv/
 ENV/
@@ -32,6 +50,13 @@ env/
 *.swo
 *~
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Gradio temporary files
+gradio_cached_examples/
+flagged/
 # Model outputs
 out/
 test_output/
