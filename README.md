@@ -159,6 +159,24 @@ predicted_ppm_dna = predicted_ppm[dna_mask][:, residues_to_consider]
 python ./inference/run.py --help
 ```
 
+## GitHub Actions Workflows
+
+This repository includes automated GitHub Actions workflows for running NA-MPNN:
+
+### Inference Workflow (`run-na-mpnn.yml`)
+Automatically runs NA-MPNN inference examples on push or can be triggered manually.
+- Runs design and specificity modes on example PDB files
+- Uploads output artifacts
+- Can be customized via manual trigger parameters
+
+### Training Workflow (`run-na-training.yml`)
+Runs the NA-MPNN training script (`na_run.py`) with a configuration file.
+- Manual trigger only
+- Includes test data generation for quick validation
+- Configure with custom JSON files for actual training
+
+See [.github/workflows/README.md](.github/workflows/README.md) for detailed documentation.
+
 ## Splits
 The *splits* folder contains information about the structures and PPM IDs used
 for training and evaluation. This includes information on the train/validation/test splits.

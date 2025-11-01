@@ -38,6 +38,10 @@ results/
 tmp/
 temp/
 *.tmp
+# Virtual environments
+venv/
+ENV/
+env/
 
 # IDE
 .vscode/
@@ -53,3 +57,18 @@ Thumbs.db
 # Gradio temporary files
 gradio_cached_examples/
 flagged/
+# Model outputs
+out/
+test_output/
+*.pt
+*.pth
+*.log
+
+# Data files
+*.npy
+*.npz
+data/test_*.csv
+
+# OS
+.DS_Store
+Thumbs.db
