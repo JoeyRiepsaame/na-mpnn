@@ -13,13 +13,16 @@ def run_design(pdb_file, temperature, num_sequences, seed, design_na_only):
     try:
         # Create temporary directory for output
         with tempfile.TemporaryDirectory() as tmp_dir:
-            # Copy PDB file to temp location
-            pdb_path = pdb_file.name
+            # Validate and sanitize the PDB file path
+            pdb_path = os.path.abspath(pdb_file.name)
+            # Ensure the file exists and is readable
+            if not os.path.isfile(pdb_path):
+                return "Error: Invalid PDB file provided."
             
             # Set model parameters based on mode
             checkpoint_path = "./models/design_model/s_19137.pt"
             
-            # Build command
+            # Build command with validated inputs
             cmd = [
                 "python", "inference/run.py",
                 "--model_type", "na_mpnn",
@@ -27,9 +30,9 @@ def run_design(pdb_file, temperature, num_sequences, seed, design_na_only):
                 "--checkpoint_na_mpnn", checkpoint_path,
                 "--pdb_path", pdb_path,
                 "--out_folder", tmp_dir,
-                "--temperature", str(temperature),
-                "--batch_size", str(num_sequences),
-                "--seed", str(seed),
+                "--temperature", str(float(temperature)),
+                "--batch_size", str(int(num_sequences)),
+                "--seed", str(int(seed)),
                 "--output_pdbs", "0",
                 "--output_sequences", "1",
                 "--output_specificity", "0"
@@ -38,8 +41,8 @@ def run_design(pdb_file, temperature, num_sequences, seed, design_na_only):
             if design_na_only:
                 cmd.extend(["--design_na_only", "1"])
             
-            # Run inference
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            # Run inference with shell=False for security
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300, shell=False)
             
             if result.returncode != 0:
                 return f"Error running inference:\n{result.stderr}"
@@ -76,13 +79,16 @@ def run_specificity(pdb_file, design_na_only):
     try:
         # Create temporary directory for output
         with tempfile.TemporaryDirectory() as tmp_dir:
-            # Copy PDB file to temp location
-            pdb_path = pdb_file.name
+            # Validate and sanitize the PDB file path
+            pdb_path = os.path.abspath(pdb_file.name)
+            # Ensure the file exists and is readable
+            if not os.path.isfile(pdb_path):
+                return "Error: Invalid PDB file provided."
             
             # Set model parameters based on mode
             checkpoint_path = "./models/specificity_model/s_70114.pt"
             
-            # Build command - for specificity, omit amino acids
+            # Build command with validated inputs - for specificity, omit amino acids
             cmd = [
                 "python", "inference/run.py",
                 "--model_type", "na_mpnn",
@@ -99,8 +105,8 @@ def run_specificity(pdb_file, design_na_only):
             if design_na_only:
                 cmd.extend(["--design_na_only", "1"])
             
-            # Run inference
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            # Run inference with shell=False for security
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300, shell=False)
             
             if result.returncode != 0:
                 return f"Error running inference:\n{result.stderr}"
