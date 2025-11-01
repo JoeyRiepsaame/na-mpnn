@@ -1,0 +1,102 @@
+name: Run NA-MPNN Model
+
+# Trigger workflow manually or on push events
+on:
+  workflow_dispatch:
+    inputs:
+      model_type:
+        description: 'Model type to run (na_mpnn)'
+        required: false
+        default: 'na_mpnn'
+      mode:
+        description: 'Mode to run (design or specificity)'
+        required: false
+        default: 'design'
+      pdb_path:
+        description: 'Path to PDB file (relative to repo root)'
+        required: false
+        default: './inference/examples/4oqu.pdb'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '**.py'
+      - 'requirements.txt'
+      - '.github/workflows/run-na-mpnn.yml'
+
+jobs:
+  run-na-mpnn:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+          cache: 'pip'
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenbabel-dev openbabel
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+      
+      - name: Run NA-MPNN Inference - Design Mode
+        run: |
+          python ./inference/run.py \
+            --model_type "${{ github.event.inputs.model_type || 'na_mpnn' }}" \
+            --mode "${{ github.event.inputs.mode || 'design' }}" \
+            --pdb_path "${{ github.event.inputs.pdb_path || './inference/examples/4oqu.pdb' }}" \
+            --out_folder "./out/design"
+      
+      - name: Upload design outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: na-mpnn-design-outputs
+          path: ./out/design/
+          retention-days: 7
+      
+      - name: Run NA-MPNN Inference - Specificity Mode
+        run: |
+          # Run specificity prediction for nucleic acids only
+          # omit_AA contains all 20 standard amino acids (ARNDCQEGHILKMFPSTWYV) plus unknown (X)
+          # This fixes protein residues and only predicts nucleic acid specificity
+          python ./inference/run.py \
+            --model_type "na_mpnn" \
+            --mode "specificity" \
+            --pdb_path "./inference/examples/1am9.pdb" \
+            --out_folder "./out/specificity" \
+            --design_na_only 1 \
+            --output_pdbs 0 \
+            --output_sequences 0 \
+            --output_specificity 1 \
+            --omit_AA "ARNDCQEGHILKMFPSTWYVX"
+      
+      - name: Upload specificity outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: na-mpnn-specificity-outputs
+          path: ./out/specificity/
+          retention-days: 7
+      
+      - name: Display output summary
+        run: |
+          echo "=== NA-MPNN Workflow Completed ==="
+          echo "Design outputs:"
+          ls -lh ./out/design/ || echo "No design outputs found"
+          echo ""
+          echo "Specificity outputs:"
+          ls -lh ./out/specificity/ || echo "No specificity outputs found"

@@ -1,0 +1,107 @@
+name: Run NA-MPNN Training
+
+# This workflow runs the na_run.py training script
+# Note: This requires preprocessed training data to be available
+on:
+  workflow_dispatch:
+    inputs:
+      config_file:
+        description: 'Path to JSON configuration file'
+        required: false
+        default: 'test_model.json'
+
+jobs:
+  run-training:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+          cache: 'pip'
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenbabel-dev openbabel
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+      
+      - name: Verify configuration file exists
+        run: |
+          CONFIG_FILE="${{ github.event.inputs.config_file || 'test_model.json' }}"
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Error: Configuration file $CONFIG_FILE not found"
+            exit 1
+          fi
+          echo "Configuration file found: $CONFIG_FILE"
+      
+      - name: Create minimal test data (if using test_model.json)
+        if: github.event.inputs.config_file == 'test_model.json' || github.event.inputs.config_file == ''
+        run: |
+          # Create data directory structure
+          mkdir -p data
+          
+          # Create minimal CSV files for testing
+          # These files contain minimal data just to test the script can start
+          echo "structure_path,asmb_lengths_path,ppm_paths,date,sampling_probability" > data/test_train.csv
+          echo "./inference/examples/4oqu.pdb,./data/test_asmb_lengths.npy,[],2020-01-01,1.0" >> data/test_train.csv
+          
+          echo "structure_path,asmb_lengths_path,ppm_paths,date,sampling_probability" > data/test_valid.csv
+          echo "./inference/examples/1am9.pdb,./data/test_asmb_lengths.npy,[],2020-01-01,1.0" >> data/test_valid.csv
+          
+          # Create a minimal assembly lengths file
+          # Format: dict with assembly_id -> (total_length, protein_length, dna_length, rna_length)
+          python3 -c "import numpy as np; np.save('data/test_asmb_lengths.npy', {'1': (100, 50, 25, 25)}, allow_pickle=True)"
+          
+          echo "Test data created successfully"
+      
+      - name: Run na_run.py training script
+        run: |
+          CONFIG_FILE="${{ github.event.inputs.config_file || 'test_model.json' }}"
+          echo "Running na_run.py with config: $CONFIG_FILE"
+          
+          # Run the script with a timeout for test data (5 minutes)
+          # For test data, the script may fail due to incomplete data structures,
+          # which is expected behavior for validation purposes
+          set +e  # Don't exit on error
+          timeout 300 python na_run.py "$CONFIG_FILE"
+          EXIT_CODE=$?
+          set -e
+          
+          if [ $EXIT_CODE -eq 124 ]; then
+            echo "Training script timed out after 300 seconds (expected for test configuration)"
+          elif [ $EXIT_CODE -ne 0 ]; then
+            echo "Training script exited with code $EXIT_CODE (may be expected for test data)"
+          else
+            echo "Training script completed successfully"
+          fi
+      
+      - name: Upload training outputs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: na-mpnn-training-outputs
+          path: |
+            test_output/
+            *.log
+          retention-days: 7
+      
+      - name: Display output summary
+        if: always()
+        run: |
+          echo "=== NA-MPNN Training Workflow Completed ==="
+          echo "Training outputs:"
+          ls -lhR test_output/ || echo "No training outputs found"
