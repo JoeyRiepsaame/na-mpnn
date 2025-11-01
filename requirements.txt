@@ -1,0 +1,7 @@
+# Core dependencies for NA-MPNN
+numpy>=2.3.3
+pandas>=2.3.2
+torch>=2.5.1
+openbabel>=3.1.0
+ProDy>=2.6.1
+pyarrow
