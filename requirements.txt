@@ -1,0 +1,5 @@
+numpy==2.0.2
+pandas==2.2.3
+prody==2.4.1
+torch==2.5.1
+gradio==5.5.0
