@@ -371,14 +371,13 @@ def parse_PDB(input_path: str,
     output_dict["chain_letters"] = list(np.array(reference_chain_ids))
 
     na_chain_ids = []
-    if na_reference_atoms is None:
-        na_chain_ids = np.array([])
-    else:
+    if na_reference_atoms is not None:
         for i, chain_id in enumerate(list(reference_chain_ids)):
             if dna_mask[i] or rna_mask[i]:
                 na_chain_ids.append(chain_id)
 
-    output_dict["na_chain_letters"] = na_chain_ids
+    # Ensure na_chain_letters is always a list for consistent type handling
+    output_dict["na_chain_letters"] = list(set(na_chain_ids))
 
     output_dict['protein_mask'] = torch.tensor(protein_mask, device=device, dtype=torch.int32)
     output_dict['dna_mask'] = torch.tensor(dna_mask, device=device, dtype=torch.int32)

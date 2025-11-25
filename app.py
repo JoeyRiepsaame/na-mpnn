@@ -8,6 +8,9 @@ import json
 import subprocess
 import shutil
 
+# Get the directory where this script is located (for resolving relative paths)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def run_design(pdb_file, temperature, num_sequences, seed, design_na_only):
     """Run NA-MPNN in design mode using the inference script"""
     try:
@@ -19,12 +22,13 @@ def run_design(pdb_file, temperature, num_sequences, seed, design_na_only):
             if not os.path.isfile(pdb_path):
                 return "Error: Invalid PDB file provided."
             
-            # Set model parameters based on mode
-            checkpoint_path = "./models/design_model/s_19137.pt"
-            
+            # Set model parameters based on mode (use absolute paths)
+            checkpoint_path = os.path.join(SCRIPT_DIR, "models", "design_model", "s_19137.pt")
+            inference_script = os.path.join(SCRIPT_DIR, "inference", "run.py")
+
             # Build command with validated inputs
             cmd = [
-                "python", "inference/run.py",
+                sys.executable, inference_script,
                 "--model_type", "na_mpnn",
                 "--mode", "design",
                 "--checkpoint_na_mpnn", checkpoint_path,
@@ -85,12 +89,13 @@ def run_specificity(pdb_file, design_na_only):
             if not os.path.isfile(pdb_path):
                 return "Error: Invalid PDB file provided."
             
-            # Set model parameters based on mode
-            checkpoint_path = "./models/specificity_model/s_70114.pt"
-            
+            # Set model parameters based on mode (use absolute paths)
+            checkpoint_path = os.path.join(SCRIPT_DIR, "models", "specificity_model", "s_70114.pt")
+            inference_script = os.path.join(SCRIPT_DIR, "inference", "run.py")
+
             # Build command with validated inputs - for specificity, omit amino acids
             cmd = [
-                "python", "inference/run.py",
+                sys.executable, inference_script,
                 "--model_type", "na_mpnn",
                 "--mode", "specificity",
                 "--checkpoint_na_mpnn", checkpoint_path,
